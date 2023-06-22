@@ -1,5 +1,16 @@
 # Information-Flow Control in TypeScript
 
+
+## Quickstart
+In your typescript project, run ```npm install ifc-ts```.
+Then, in your code, import types and functions you need from the library like so:
+```typescript
+import {label} from 'ifc-ts';
+import type {Label} from 'ifc-ts';
+
+const myLabel: Label = label('my value');
+```
+
 ifc-ts is a library that provides developers with an API
 for specifying information-flow security constraints in
 effectful code. These constraints are checked statically

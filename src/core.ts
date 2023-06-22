@@ -9,17 +9,14 @@ ifc-ts. This file is structured as follows:
  - LIO Monad
  - IO Examples
   
- */ 
+ */
 
 // LATTICE_________________________________________________
 
 // Our lattice is the standard powerset lattice.
 
-// TODO: make our code instead be generic in the lattice.
-// how to make a generic lattice at the type-level? 🤔
-
-// We denote a principal by a string.
-type Principal = string
+/** We denote a principal by a string. */
+export type Principal = string
 
 /* // A level is a set of principals.
 type Level = Set<Principal> */
@@ -30,11 +27,10 @@ type Level = Set<Principal> */
 // typescript infers] behave like a set of principals.
 // (i.e. "Alice" | "Bob" ≈ { "Alice", "Bob" })
 // so we can leave out the Set<...> indirection.
-type Level = Principal
+export type Level = Principal;
 
-// Type-level function for least upper bound is just 
-// a set union.
-type LUB<L extends Level, R extends Level> = true extends true ? L | R : L | R
+/** Type-level function for least upper bound implemented as a set union. */
+export type LUB<L extends Level, R extends Level> = true extends true ? L | R : L | R;
 
 // note: this definition is equivalent to "... = L | R".
 // why that redundant-looking "extends"? to force the 
@@ -42,52 +38,56 @@ type LUB<L extends Level, R extends Level> = true extends true ? L | R : L | R
 // the type, so something of type LUB<L,R> will be inferred 
 // to have type L|R, not LUB<L,R>. see e0 and b1 below)
 
-// Value-level function for least upper bound.
-function lub <L extends Level, R extends Level> ( l : L, r : R ) : LUB<L,R> {
-    return l
-    // the return type is actually L ; making it 
-    // L | R is actually weakening the guarantee 
-    // of the function. however, that's exactly 
-    // what we want here.
-    // if we need the implementation to compute
-    // something of type L | R, then we can use 
-    //return (Math.random() > 0.5) ? l : r
-    // (but that's a runtime overhead that's 
-    // unnecessary when we only need this for 
-    // type checking)
+/** Value-level function for least upper bound. */
+export function lub<L extends Level, R extends Level>(l: L, r: R): LUB<L, R> {
+    return l;
 }
 
-// Type-level function for greatest lower bound is just 
+// the return type is actually L ; making it
+// L | R is actually weakening the guarantee
+// of the function. however, that's exactly
+// what we want here.
+// if we need the implementation to compute
+// something of type L | R, then we can use
+//return (Math.random() > 0.5) ? l : r
+// (but that's a runtime overhead that's
+// unnecessary when we only need this for
+// type checking)
+
+// Type-level function for greatest lower bound is just
 // a set intersection.
-type GLB<L extends Level, R extends Level> = true extends true ? L & R : never 
+/** A type level function for greatest lower bound */
+export type GLB<L extends Level, R extends Level> = true extends true ? L & R : never
 
 // note: this definition is equivalent to "... = L | R".
 // see thunk-stuff above.
 
-function glb <L extends Level, R extends Level> ( l : L, r : R ) : GLB<L,R> {
-    return botlevel
-    // idea: if l === r then return l else return botlevel.
-    // if condition is true, then (typeof l) <: R and (typeof r) <: R.
-    // that is, l is    in L & R.
-    // botlevel is also in L & R.
-    // sadly, there's a shortcoming in TypeScript's type system:
-    // the type system does not consider that Level <: string, 
-    // and thus won't produces a type error at l === r.
-    // to get around this, I compare l and r as strings, and then
-    // assert the type of the then-branch.
-    // (so, while this is a hack, it is a sound one)
-    /*
-    const sl : string = l
-    const sr : string = r
-    if ( sl === sr ) {    
-        return l as L & R // branch is true ==> l : L and l : R
-    } else { 
-        return botlevel
-    }
-    */
+/** Value-level function for greatest lower bound. */
+export function glb<L extends Level, R extends Level>(l: L, r: R): GLB<L, R> {
+    return botLevel
 }
 
-namespace example_lub_glb{
+// idea: if l === r then return l else return botlevel.
+// if condition is true, then (typeof l) <: R and (typeof r) <: R.
+// that is, l is    in L & R.
+// botlevel is also in L & R.
+// sadly, there's a shortcoming in TypeScript's type system:
+// the type system does not consider that Level <: string,
+// and thus won't produces a type error at l === r.
+// to get around this, I compare l and r as strings, and then
+// assert the type of the then-branch.
+// (so, while this is a hack, it is a sound one)
+/*
+const sl : string = l
+const sr : string = r
+if ( sl === sr ) {
+    return l as L & R // branch is true ==> l : L and l : R
+} else {
+    return botlevel
+}
+*/
+
+namespace example_lub_glb {
     const e0 = lub("Alice", "Bob") // "Alice" | "Bob"
     const e1 = lub(e0, "Eve")      // "Alice" | "Bob" | "Eve"
     const f0 = glb("Alice", "Bob") // never
@@ -96,9 +96,9 @@ namespace example_lub_glb{
     const f3 = glb(e0, e1)         // "Alice" | "Bob"
 }
 
-// Type-level less-than-or-equal.
 // checks if L <: R. (IDE points out that L is unused; just ignore that)
-type LEQ<L extends R, R extends Level> = true
+/** Type-level less-than-or-equal. */
+export type LEQ<L extends R, R extends Level> = true;
 
 // above is a neat hack that capitalizes on the fact that lattice 
 // leq is modeled as typescript-subtyping. 
@@ -110,29 +110,35 @@ type LEQ<L extends R, R extends Level> = true
 //    true extends true ? Equal<L, GLB<L, R>> : never
 //    [L, R] extends [Level, Level] ? Equal<L, GLB<L, R>> : never
 
-namespace example_leq{
+namespace example_leq {
     const al = "Alice"
     const bo = "Bob"
-    const w0 : LEQ<typeof al, typeof al | typeof bo> = true 
+    const w0: LEQ<typeof al, typeof al | typeof bo> = true
     // @ts-expect-error : if not a subtype, then type error 🎉 
     // (ignore w1 type; try wiping these comments & see what happens)
-    const w1 : LEQ<typeof al | typeof bo, typeof al> = true    
+    const w1: LEQ<typeof al | typeof bo, typeof al> = true
 }
 
-// bottom and top lattice element, type-level (empty-set & full-set)
-type Bot = never
-type Top = Level
+/** Type-level bottom lattice is the empty set. */
+export type Bot = never;
+
+/** Type-level top lattice is the full set. */
+export type Top = Level;
 
 // bottom and top lattice element (a hack, as I'm asserting the type).
-const botlevel : Bot = "👇" as Bot // type represents empty set of principals
-const toplevel : Top = "👆" as Top // type represents full  set of principals
+
+/** Bottom lattice element. The type represents empty set of principals */
+export const botLevel: Bot = "👇" as Bot;
+
+/** Top lattice element. The type represents full  set of principals*/
+export const topLevel: Top = "👆" as Top;
 
 // examples below.
 
 // LABELS__________________________________________________
 
-// Labeled value.
-type Labeled<L extends Level, V extends any> = [L, V]
+/** A labeled value. */
+export type Labeled<L extends Level, V extends any> = [L, V];
 
 // no trick to force-evaluate the type-level thunk;
 // we want to keep it, because we want this type to be opaque.
@@ -148,14 +154,14 @@ namespace examples_labels_as_values {
     const bob = "Bob"
     // suppose we don't keep any levels at the value-level.
     type Lb<L extends Level, V> = V // type system remarks that L is redundant, but says OK.
-    const x0 : Lb<typeof amy, number> = 4
-    const x1 : Lb<typeof bob, number> = 4
+    const x0: Lb<typeof amy, number> = 4
+    const x1: Lb<typeof bob, number> = 4
     let x2 = x0
     // then the following succeeds (despite x2 being a Amy-container)
     x2 = x1
     // now suppose we keep levels at the value-level.
-    const y0 : Labeled<typeof amy, number> = [amy, 4]
-    const y1 : Labeled<typeof bob, number> = [bob, 4]
+    const y0: Labeled<typeof amy, number> = [amy, 4]
+    const y1: Labeled<typeof bob, number> = [bob, 4]
     let y2 = y0
     // @ts-expect-error : cannot assign Bob-labeled data to Amy-container 
     y2 = y1
@@ -172,36 +178,37 @@ namespace examples_labels_as_values {
 // are needed to avoid a 'never'-creep - see below.
 // W: I have removed this hack, as it appears to be unnecessary at the moment.
 
-// Attach a label to a value.
-function label<L extends Level, V> ( l : L, v : V) : Labeled<L, V> {
-    return [ l, v ]
+/** Attaches a label to a value. */
+export function label<L extends Level, V>(l: L, v: V): Labeled<L, V> {
+    return [l, v];
 }
 
-// Project labeled-value to the value.
-// internal use only; must NOT be part of the exposed API.
-function unsafe_value_of<L extends Level, V> ( lv : Labeled<L, V> ) : V {
-    const [ l, v ] = lv
-    return v
+/** Project labeled-value to the value. WARNING: this is UNSAFE. */
+export function unsafe_valueOf<L extends Level, V>(lv: Labeled<L, V>): V {
+    const [l, v] = lv;
+    return v;
 }
 
-// Project labeled-value to the label.
-function label_of<L extends Level, V> ( lv : Labeled<L, V> ) : L {
-    const [ l, v ] = lv
-    return l
+/** Projects labeled-value to the label. */
+export function labelOf<L extends Level, V>(lv: Labeled<L, V>): L {
+    const [l, v] = lv;
+    return l;
 }
 
-// Up-classify label on labled-value
-function up_label<L extends L_, L_ extends Level, V> ( l_ : L_ ) : ( _ : Labeled<L, V> ) => Labeled<L_, V> {
-    return ( [ _, v ] : Labeled<L, V>) => { return label(l_, v) }
+/** Up-classify label on labeled-value. */
+export function upLabel<L extends L_, L_ extends Level, V>(l_: L_): (_: Labeled<L, V>) => Labeled<L_, V> {
+    return ([_, v]: Labeled<L, V>) => {
+        return label(l_, v);
+    }
 }
 
 namespace examples_label {
-    
+
     // Here are two principals (they are strings)
-    type Alice  = "Alice"
-    type Bobby  = "Bobby"
-    const alice : Alice = "Alice"
-    const bobby : Bobby = "Bobby"
+    type Alice = "Alice"
+    type Bobby = "Bobby"
+    const alice: Alice = "Alice"
+    const bobby: Bobby = "Bobby"
 
     // We can label a number with the principal
     const a0: Labeled<Alice, number> = label<Alice, number>("Alice", 3)
@@ -226,13 +233,13 @@ namespace examples_label {
     // here the type is inferred to Labeled<Alice|Bob, number>
     const c0 = label<LUB<Alice, Bobby>, number>(alice, 5)
     // here the type is inferred, despite generics not being provided explicitly.
-    const c1 = label(lub(alice,bobby), 5)
+    const c1 = label(lub(alice, bobby), 5)
     // testing GLB:
     const c2 = label<GLB<Alice, Alice>, number>(alice, 5)
     // @ts-expect-error : GLB<Alice, Bobby> = never, Alice is not an element of never.
     const c3 = label<GLB<Alice, Bobby>, number>(alice, 5)
 
-    const d0 = label_of(c0)
+    const d0 = labelOf(c0)
 }
 
 namespace examples_bot_top {
@@ -244,10 +251,10 @@ namespace examples_bot_top {
     // LABELED_HACK - here is where we needed it.
     // w/o the hack, we would get a 'never'-creep;
     // the type would be 'never' instead of [never, number]
-    const c3 = label<GLB<typeof amy, Bot>, number>(botlevel, 5)
-    const c4 = label(botlevel, 5)
+    const c3 = label<GLB<typeof amy, Bot>, number>(botLevel, 5)
+    const c4 = label(botLevel, 5)
 
-    const d1 = label_of(c4)
+    const d1 = labelOf(c4)
 }
 
 // SUBTYPING_______________________________________________
@@ -269,15 +276,15 @@ type Covariant<T> = T
 // we model contravariance using function types, since 
 // TypeScript subtyping for function arguments is already
 // contravariant (as is standard for subtyping).
-type Contravariant<T> = (_ : T) => null
+type Contravariant<T> = (_: T) => null;
 
-function to_contravariant<T>( t : T ) : Contravariant<T> {
-    return ( (_ : T) => null )
+function toContravariant<T>(t: T): Contravariant<T> {
+    return ((_: T) => null);
 }
 
-function from_contravariant<T>( ct : Contravariant<T>) : T {
-    const r : T = botlevel as T // hack that only works with levels...
-    return r
+function fromContravariant<T>(ct: Contravariant<T>): T {
+    const r: T = botLevel as T // hack that only works with levels...
+    return r;
 }
 
 // finally, we may need to prohibit subtyping a type, 
@@ -287,32 +294,36 @@ function from_contravariant<T>( ct : Contravariant<T>) : T {
 // be the same. that way, 
 // covariably     modifying the type violate contravariance of the argument type, and 
 // contravariably modifying the type violate covariance     of the return   type. 
-type Invariant<T> = (_ : T) => T
+type Invariant<T> = (_: T) => T
 
 namespace example_subtyping {
     // Covarance examples
-    const cvn : never  = botlevel
-    const cvs : string = "Falaffel"
+    const cvn: never = botLevel
+    const cvs: string = "Falaffel"
     // never <: string, so we can assign a never to a string. (can up-classify type)
-    const cv0 : string = cvn
+    const cv0: string = cvn
     // @ts-expect-error : string </: never.
-    const cv1 : never  = cvs
+    const cv1: never = cvs
 
     // Contravariance examples
-    const con : Contravariant<never>  = (_ : never) => null
-    const cos : Contravariant<string> = (_ : string) => null
+    const con: Contravariant<never> = (_: never) => null
+    const cos: Contravariant<string> = (_: string) => null
     // @ts-expect-error : string </: never. (cannot down-classify a never to a string)
-    const co0 : Contravariant<string> = con
+    const co0: Contravariant<string> = con
     // never <: string, so we can assign a string to a never (can down-classify type).
-    const co1 : Contravariant<never>  = cos
+    const co1: Contravariant<never> = cos
 
     // Invariance examples
-    const nvn : Invariant<never>  = (_ : never)  => { return _ }
-    const nvs : Invariant<string> = (_ : string) => { return _ }
+    const nvn: Invariant<never> = (_: never) => {
+        return _
+    }
+    const nvs: Invariant<string> = (_: string) => {
+        return _
+    }
     // @ts-expect-error : cannot covariably modify the type.
-    const nv0 : Invariant<string> = nvn
+    const nv0: Invariant<string> = nvn
     // @ts-expect-error : cannot contravariably modify the type.
-    const nv1 : Invariant<never>  = nvs
+    const nv1: Invariant<never> = nvs
 }
 
 // LIO_MONAD_______________________________________________
@@ -338,113 +349,119 @@ namespace example_subtyping {
 // (no force-eval type-level-thunk; I want this opaque).
 //type LIO<Lpc extends Level, L extends Level, V> = [Lpc, L, V]
 //type LIOdg<Lpc extends Level, L extends Level, V> = true extends true ?  (x : Lpc) => [L, V]  :  (x : Lpc) => [L, V] 
-type LIO<Lpc extends Level, L extends Level, V> = [ Contravariant<Lpc>, L, V ]
+
+/** Labeled-I-O, our Monad type. */
+export type LIO<Lpc extends Level, L extends Level, V> = [Contravariant<Lpc>, L, V];
 
 // TODO: Should we make this type opaque? 🤔
 // W: yes; we don't want user of lib to pull stuff out of a monad willy nilly.
 
-//
-
 namespace example_contravariance_again {
     // shrinking the domain - that's OK
-    const ssn : (x : string) => null = (x : string | number) => null
+    const ssn: (x: string) => null = (x: string | number) => null
     // @ts-expect-error : function not defined on full domain string | number
-    const sns : (x : string | number) => null = (x : string) => null
+    const sns: (x: string | number) => null = (x: string) => null
 
-    const amy : "Amy" = "Amy"
-    const bob : "Bob" = "Bob"
+    const amy: "Amy" = "Amy"
+    const bob: "Bob" = "Bob"
 
     // @ts-expect-error : Top not subtype of amy
-    const cas : typeof amy = toplevel
+    const cas: typeof amy = topLevel
     // amy <: Top ==> Top constant can house amy values 
-    const csa : Top = amy
+    const csa: Top = amy
     // @ts-expect-error : bob not subtype of amy
-    const cab : typeof amy = bob
+    const cab: typeof amy = bob
 
     // shrinking the domain - that's OK
-    const a_s : (x : typeof amy) => null = (x : Top) => null
+    const a_s: (x: typeof amy) => null = (x: Top) => null
     // @ts-expect-error : function not defined on full domain string
-    const s_a : (x : Top) => null = (x : typeof amy) => null
+    const s_a: (x: Top) => null = (x: typeof amy) => null
     // @ts-expect-error : function not defined on full domain typeof amy (domains disjoint) 
-    const a_b : (x : typeof amy) => null = (x : typeof bob) => null
+    const a_b: (x: typeof amy) => null = (x: typeof bob) => null
 }
 
-// some utility functions to manually up-classify data and down-classify pc.
-// these are not required to use! (since subtyping the monad works as intended).
-// however, they are useful for debugging.
-
-function up_data<
+/** A utility function to manually up-classify data.
+ * These are not required to use! (since subtyping the monad works as intended).
+ * However, they are useful for debugging.
+ */
+export function upData<
     Lpc extends Level, L extends L_, L_ extends Level, V
->( 
-    l_ : L_,
-    m : LIO<Lpc, L, V>
+>(
+    l_: L_,
+    m: LIO<Lpc, L, V>
 ):
-    LIO<Lpc, L_, V> 
-{
-    const [lpc,l,v] = m
+    LIO<Lpc, L_, V> {
+    const [lpc, l, v] = m
     return [lpc, l_, v]
 }
 
-function down_pc<
+/** A utility function to manually down-classify pc.
+ * These are not required to use! (since subtyping the monad works as intended).
+ * However, they are useful for debugging.
+ */
+export function downPC<
     Lpc_ extends Lpc, Lpc extends Level, L extends Level, V
->( 
-    lpc_ : Lpc_,
-    m : LIO<Lpc, L, V> 
+>(
+    lpc_: Lpc_,
+    m: LIO<Lpc, L, V>
 ):
-    LIO<Lpc_, L, V>
-{
+    LIO<Lpc_, L, V> {
     const [lpc, l, v] = m
-    return [to_contravariant(lpc_), l, v]
+    return [toContravariant(lpc_), l, v]
 }
 
-namespace example_reclassify{
-    const c0 : LIO<Top, Bot, number> = [to_contravariant(toplevel), botlevel, 5]
+namespace example_reclassify {
+    const c0: LIO<Top, Bot, number> = [toContravariant(topLevel), botLevel, 5]
 
-    const c1 = down_pc(lub("Alice", "Bob"), c0)
-    const c2 = down_pc("Alice", c1)
+    const c1 = downPC(lub("Alice", "Bob"), c0)
+    const c2 = downPC("Alice", c1)
     // @ts-expect-error : "Alice" | "Bob" PC not downgradable to "Eve"
-    const c3 = down_pc("Eve", c1)
+    const c3 = downPC("Eve", c1)
 
-    const c4 = up_data("Alice", c0)
-    const c5 = up_data(lub("Alice", "Bob"), c4)
+    const c4 = upData("Alice", c0)
+    const c5 = upData(lub("Alice", "Bob"), c4)
     // @ts-expect-error : "Alice" | "Bob" data not upgradable to "Alice"
-    const c6 = up_data("Alice", c5)
+    const c6 = upData("Alice", c5)
     // @ts-expect-error : "Alice" | "Bob" data not upgradable to "Eve"
-    const c7 = up_data("Eve", c5)
-    const c8 = up_data(lub(lub("Alice", "Bob"), "Eve"), c5)
+    const c7 = upData("Eve", c5)
+    const c8 = upData(lub(lub("Alice", "Bob"), "Eve"), c5)
 }
 
 // Our unlabel statement.
 // typically, given Labeled<L,V>, the return type is LIO<PC, L, V> for any PC.
 // instead, I make the type be the strongest guarantee, and will use
 // subtyping to weaken this guarantee where needed.
-function unlabel<L extends Level, V> ( lv : Labeled<L, V> ) : LIO<Top, L, V> {
+
+/** Unlabel a labeled statement. */
+export function unLabel<L extends Level, V>(lv: Labeled<L, V>): LIO<Top, L, V> {
     const [l, v] = lv
-    return [to_contravariant(toplevel), l, v]
+    return [toContravariant(topLevel), l, v]
 }
 
-namespace examples_unlabel {
+namespace examples_unLabel {
     const amy = "Amy"
     const bob = "Bob"
     const c0 = label<LUB<typeof amy, typeof bob>, number>(amy, 5) // : Labeled<"Amy" | "Bob", number>
-    const m0 = unlabel(c0) // : LIO<toplevel, "Amy" | "Bob", number>
+    const m0 = unLabel(c0) // : LIO<toplevel, "Amy" | "Bob", number>
 }
 
 // Type for our ret statement.
 // typically, its type is LIO<Lpc,L,V> for any Lpc and L.
 // instead, I make the type be the strongest guarantee, and will use
 // subtyping to weaken this guarantee where needed.
-function ret<V>( v : V ) : LIO<Top, Bot, V> {    
-    return [to_contravariant(toplevel), botlevel, v]
+
+/** Return a value. */
+export function ret<V>(v: V): LIO<Top, Bot, V> {
+    return [toContravariant(topLevel), botLevel, v]
 }
 
 namespace examples_ret {
     const r0 = ret(4) // most precise type inferred
     const amy = "Amy"
     // look, subtyping works; can upclassify data of ret.
-    const f1 : <V,>(v : V) => LIO<Top, typeof amy, V> = ret
+    const f1: <V, >(v: V) => LIO<Top, typeof amy, V> = ret
     // look, subtyping works; can downclassify pc of ret.
-    const f2 : <V,>(v : V) => LIO<typeof amy, Bot, V> = ret
+    const f2: <V, >(v: V) => LIO<typeof amy, Bot, V> = ret
 }
 
 
@@ -553,23 +570,24 @@ function bindF<
 // type constructors). 
 // now the only way to get a type error when attempting 
 // to construct a bind, is if L <: Rpc does not hold.
-function bind<
+
+/** The bind statement */
+export function bind<
     Lpc extends Level,
-    L   extends Rpc,                // L <: Rpc
+    L extends Rpc,                // L <: Rpc
     V,
-    Rpc extends Level, 
-    R   extends Level,
+    Rpc extends Level,
+    R extends Level,
     W
-> ( 
-    m : LIO<Lpc, L, V>,
-    f : (_ : V) => LIO<Rpc, R, W>
-) : 
-    LIO< GLB<Lpc, Rpc>, LUB<L,R>, W> // Zpc <: Lpc , Zpc <: Rpc , L <: Z , R <: Z
+>(
+    m: LIO<Lpc, L, V>,
+    f: (_: V) => LIO<Rpc, R, W>
+):
+    LIO<GLB<Lpc, Rpc>, LUB<L, R>, W> // Zpc <: Lpc , Zpc <: Rpc , L <: Z , R <: Z
 {
     const [lpc, l, v] = m
     return f(v)
 }
-
 
 namespace example_bind {
     const amy = "Amy"
@@ -577,70 +595,72 @@ namespace example_bind {
     const lb = label(amy, 5)         // Labeled< "Amy", number >
     const m0 = ret(lb)               // LIO< string, never, Labeled<"Amy",number> >
     const f0 = ret
-    const m1 = bind(m0,f0)           // LIO< string, never, Labeled<"Amy",number> > (c1 through a pipe; so far ok)
-    const m2 = bind(m1,unlabel)      // LIO< string, "Amy", number > // data unlabeled properly; so far ok
+    const m1 = bind(m0, f0)           // LIO< string, never, Labeled<"Amy",number> > (c1 through a pipe; so far ok)
+    const m2 = bind(m1, unLabel)      // LIO< string, "Amy", number > // data unlabeled properly; so far ok
 
     // FIXED: no longer an error.
     // ts-expect-error : ret creates monad w/ data_level = botlevel, but bind requires L <: Z; hence error.
-    const m_ = bind(m2, ret)          
+    const m_ = bind(m2, ret)
 
-    const f1 : <V>(v : V) => LIO<Top, typeof amy, V> = ret
+    const f1: <V>(v: V) => LIO<Top, typeof amy, V> = ret
     const m3 = bind(m2, f1)          // 🎉
-    const m4 = down_pc(botlevel, m3)
+    const m4 = downPC(botLevel, m3)
 
-    const m5 = down_pc(amy, ret(5))
+    const m5 = downPC(amy, ret(5))
     const m6 = bind(m5, ret)
     const m7 = bind(m5, f1)          // 🎉
 }
 
-// if you have data in the monad,
-// and you wish to write it to someplace,
-// you'll need to box it.
-// to_labeled will automatically assign 
-// the appropriate label 
-// to the box (i.e. the data-level).
-// the pc does not go away; it might forbid
-// writing this boxed value in a "next step".
-function to_labeled <
-    PC extends Level, 
-    L  extends Level, 
+/**
+ * if you have data in the monad,
+ * and you wish to write it to someplace,
+ * you'll need to box it.
+ * to_labeled will automatically assign
+ * the appropriate label
+ * to the box (i.e. the data-level).
+ * the pc does not go away; it might forbid
+ * writing this boxed value in a "next step".
+ */
+export function toLabeled<
+    PC extends Level,
+    L extends Level,
     V
-> ( m : LIO<PC, L, V> 
-) : LIO<PC, Bot, Labeled<L, V>> {
+>(m: LIO<PC, L, V>
+): LIO<PC, Bot, Labeled<L, V>> {
     const [pc, l, v] = m
-    return [pc, botlevel, label(l, v)]
+    return [pc, botLevel, label(l, v)]
 }
 
 namespace example_to_labeled {
     const amy = "Amy"
     const bob = "Bob"
- 
+
     // suppose we have some Amy-data sitting in our monad.
-    const m0 = bind(ret(label(amy, 5)), unlabel)
+    const m0 = bind(ret(label(amy, 5)), unLabel)
 
     // what happens if we to_label it?
     // data becomes boxed (with data-level - amy), and data-level goes to bot.
-    const m1 = to_labeled(m0)
+    const m1 = toLabeled(m0)
 }
 
 // QUALITY_OF_LIFE_________________________________________
 
-// getting a value out of the monad
-function unsafe_run_lio<Lpc extends Level, L extends Level, V>( m : LIO<Lpc, L, V> ) : V {
+/** Gets a value out of the monad. WARNING: this is unsafe! */
+export function unsafe_runLIO<Lpc extends Level, L extends Level, V>(m: LIO<Lpc, L, V>): V {
     const [lpc, l, v] = m
     return v
 }
 
-// quality of life: get the PC-level of the monad
-function level_of_pc<Lpc extends Level, L extends Level, V>( m : LIO<Lpc, L, V> ) : LIO<Lpc, L, Lpc> {
-    const [lpc, l, v] = m
-    return ret( from_contravariant(lpc) )
+/** A quality of life function that gets the PC-level of the monad. */
+export function levelOfPC<Lpc extends Level, L extends Level, V>(m: LIO<Lpc, L, V>): LIO<Lpc, L, Lpc> {
+    const [lpc, l, v] = m;
+    return ret(fromContravariant(lpc));
 }
 
-// quality of life: get the data-level of the monad
-function level_of_data<Lpc extends Level, L extends Level, V>( m : LIO<Lpc, L, V> ) : LIO<Lpc,L,L> {
-    const [lpc, l, v] = m
-    return ret( l )
+/** A quality of life function that gets the data-level of the monad. */
+export function levelOfData<Lpc extends Level, L extends Level, V>(m: LIO<Lpc, L, V>): LIO<Lpc, L, L> {
+    const [lpc, l, v] = m;
+    return ret(l);
 }
 
 // Implementing functions from fp-ts:
@@ -664,9 +684,9 @@ function level_of_data<Lpc extends Level, L extends Level, V>( m : LIO<Lpc, L, V
 const of = ret
 
 // aka. lift
-function map<A,B,Lpc extends Level,L extends Level>(ma : LIO<Lpc,L,A>, fab : (a:A) => B) : LIO<Lpc,L,B> {
-    const [lpc,l,a] = ma
-    return [lpc,l,fab(a)]
+function map<A, B, Lpc extends Level, L extends Level>(ma: LIO<Lpc, L, A>, fab: (a: A) => B): LIO<Lpc, L, B> {
+    const [lpc, l, a] = ma
+    return [lpc, l, fab(a)]
 }
 
 const chain = bind
@@ -678,12 +698,12 @@ function ap<
     LF extends Level,
     LApc extends Level,
     LA extends Level
-> (
-    mfab : LIO<LFpc,LF,(a:A)=>B>,
-    ma : LIO<LApc,LA,A>
-) : LIO<GLB<LFpc,LApc>, LUB<LF,LA>, B> {
-    const [lfpc,lf,f] = mfab
-    return map(ma,f)
+>(
+    mfab: LIO<LFpc, LF, (a: A) => B>,
+    ma: LIO<LApc, LA, A>
+): LIO<GLB<LFpc, LApc>, LUB<LF, LA>, B> {
+    const [lfpc, lf, f] = mfab
+    return map(ma, f)
 }
 
 // Why use this library? It limits what you can do.
@@ -702,33 +722,32 @@ namespace example_concat {
     // https://people.kth.se/~buiras/publications/icfp2015.pdf
     const lconcat
         : <
-            L1 extends Level,
-            L2 extends Level
-        >(
-            lb1 : Labeled<L1, string>, 
-            lb2 : Labeled<L2, string>
-        ) => 
-            LIO< Top, LUB<L1,L2>, string > 
+        L1 extends Level,
+        L2 extends Level
+    >(
+        lb1: Labeled<L1, string>,
+        lb2: Labeled<L2, string>
+    ) =>
+        LIO<Top, LUB<L1, L2>, string>
         = <
-            L1 extends Level,
-            L2 extends Level
-        >(
-            lb1 : Labeled<L1, string>, 
-            lb2 : Labeled<L2, string>
-        ) => 
-        {
-            const m1 = unlabel( lb1 )
-            const m2 = unlabel( lb2 )
-            return bind( m1, (s1 : string) => bind( m2, (s2 : string) => ret(s1 + s2) ))
-        }
+        L1 extends Level,
+        L2 extends Level
+    >(
+        lb1: Labeled<L1, string>,
+        lb2: Labeled<L2, string>
+    ) => {
+        const m1 = unLabel(lb1)
+        const m2 = unLabel(lb2)
+        return bind(m1, (s1: string) => bind(m2, (s2: string) => ret(s1 + s2)))
+    }
 
-    const lconcat2 
-        :  <L1 extends Level,L2 extends Level>(lb1 : Labeled<L1, string>, lb2 : Labeled<L2, string>) 
-        => LIO< Top, Bot, Labeled< LUB<L1,L2>, string> > 
-        = <L1 extends Level,L2 extends Level>(lb1 : Labeled<L1, string>, lb2 : Labeled<L2, string>) => {
-            const m = lconcat(lb1,lb2)
-            return to_labeled(m)
-           }
+    const lconcat2
+        : <L1 extends Level, L2 extends Level>(lb1: Labeled<L1, string>, lb2: Labeled<L2, string>)
+        => LIO<Top, Bot, Labeled<LUB<L1, L2>, string>>
+        = <L1 extends Level, L2 extends Level>(lb1: Labeled<L1, string>, lb2: Labeled<L2, string>) => {
+        const m = lconcat(lb1, lb2)
+        return toLabeled(m)
+    }
 }
 
 // IO_EXAMPLES_____________________________________________
@@ -754,55 +773,84 @@ namespace example_concat {
 // Src<L,V>, and Snk<L,V>.
 // (I'm modeling the down-classifiability using PC; should really be renamed,
 // e.g. to Contra<L>)
-type Src<L extends Level, I> = [ L, Reader<I> ]
-type Snk<L extends Level, O> = [ Contravariant<L>, Writer<O> ]
 
-type Reader<I> = () => I
-type Writer<O> = (_ : O) => void
+/**
+ * Here we provide types & primitives to create sources and sinks,
+ * and to perform I/O on these.
+ * the idea is that the programmer must create sources and sinks,
+ * and then use them in the monad.
+ * why: there are so many libraries for doing I/O; we cannot
+ * possibly support them all. we can support e.g. files & sockets.
+ * for anything beyond that, we provide these constructs so that
+ * the user of our library can themselves define the sources and
+ * sinks.
+ */
+export type Src<L extends Level, I> = [L, Reader<I>];
 
-function src<L extends Level, I>( l : L, r : Reader<I>) : Src<L,I> {
-    return [ l, r ]
+/** The sink type, see the "Src" function for details. */
+export type Snk<L extends Level, O> = [Contravariant<L>, Writer<O>];
+
+export type Reader<I> = () => I;
+export type Writer<O> = (_: O) => void;
+
+export function src<L extends Level, I>(l: L, r: Reader<I>): Src<L, I> {
+    return [l, r];
 }
 
-function snk<L extends Level, O>( l : L, w : Writer<O>) : Snk<L,O> {
-    return [ to_contravariant(l), w ]
+export function snk<L extends Level, O>(l: L, w: Writer<O>): Snk<L, O> {
+    return [toContravariant(l), w];
 }
 
-// reads data from L-source. data is L-labeled. data can be up-classified by subtyping.
-function inp<L extends Level, I>( [l, r] : Src<L,I>) : LIO<Top, Bot, Labeled<L, I>> {
-    const i = r()
-    return ret( label(l, i) )
+/** Reads data from L-source. data is L-labeled. data can be up-classified by subtyping. */
+export function input<L extends Level, I>([l, r]: Src<L, I>): LIO<Top, Bot, Labeled<L, I>> {
+    const i = r();
+    return ret(label(l, i));
 }
 
 //function out<L extends Lo, Lo extends Level, O>( [l, o] : Labeled<L, O>,  [lo, w] : Snk<Lo,O>) : LIO<Lo, Bot, null> {
-function out<L extends Level, O>( [lo, w] : Snk<L,O> ) : (_ : Labeled<L, O>) => LIO<L, Bot, null> {
-    return ([l, o]) => { w(o) ; return ret ( null ) }
+
+/** Writes data to L-sink. data is L-labeled. data can be down-classified by subtyping. */
+export function output<L extends Level, O>([lo, w]: Snk<L, O>): (_: Labeled<L, O>) => LIO<L, Bot, null> {
+    return ([l, o]) => {
+        w(o);
+        return ret(null);
+    }
 }
 
-import { readFileSync, writeFileSync } from 'fs';
+import {readFileSync, writeFileSync} from 'fs';
 
 namespace example_io {
     // first, our two principals:
     const amy = "Amy"
-    const bob = "Bob"    
+    const bob = "Bob"
     type Amy = typeof amy
     type Bob = typeof bob
 
     // next, a source and sink for each of them.
-    const src_amy : Src<Amy, string> = src(amy,  () => { const b = readFileSync("amy-src.txt"); return b.toString() } )
-    const src_bob : Src<Bob, string> = src(bob,  () => { const b = readFileSync("bob-src.txt"); return b.toString() } )
-    const snk_amy : Snk<Amy, string> = snk(amy, (s) => { writeFileSync("amy-snk.txt", s) } )
-    const snk_bob : Snk<Bob, string> = snk(bob, (s) => { writeFileSync("bob-snk.txt", s) } )
+    const src_amy: Src<Amy, string> = src(amy, () => {
+        const b = readFileSync("amy-src.txt");
+        return b.toString()
+    })
+    const src_bob: Src<Bob, string> = src(bob, () => {
+        const b = readFileSync("bob-src.txt");
+        return b.toString()
+    })
+    const snk_amy: Snk<Amy, string> = snk(amy, (s) => {
+        writeFileSync("amy-snk.txt", s)
+    })
+    const snk_bob: Snk<Bob, string> = snk(bob, (s) => {
+        writeFileSync("bob-snk.txt", s)
+    })
 
     // finally, some I/O:
 
     // can read from a source; that's a monad.
-    const mar = inp( src_amy )
+    const mar = input(src_amy)
     // can write to a sink; that's a monad.
-    const mbw = out( snk_bob )( label(bob, "Hello from Bob!\n") )
+    const mbw = output(snk_bob)(label(bob, "Hello from Bob!\n"))
 
     // can read from amy-source, and write what's read to amy-sink.
-    const bd0 = bind( inp(src_amy), out(snk_amy) )
+    const bd0 = bind(input(src_amy), output(snk_amy))
 
     // cannot write amy-labeled data to bob-labeled sink
     //const bd1 = bind( inp(src_amy), out(snk_bob) )

@@ -1,8 +1,12 @@
 {
     "compilerOptions": {
         "strict": true,
+        "outDir": "./dist",
+        "target": "ES5",
+        "module": "CommonJS",
+        "declaration": true
     },
-    "files": [
-        "ifc-ts.ts"
+    "include": [
+        "src/index.ts"
     ]
 }

@@ -1,5 +1,38 @@
 {
+  "name": "ifc-ts",
+  "description": "ifc-ts is a library that provides developers with an API\r for specifying information-flow security constraints in\r effectful code. These constraints are checked statically\r by TypeScript's type checker. Consequently, if an effectful\r computation, written using this API, is well-typed, then it\r is information-flow secure (aka. noninterfering).",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willardthor/ifc-ts.git"
+  },
+  "keywords": [
+    "ifc",
+    "information",
+    "flow",
+    "control",
+    "security",
+    "ITU",
+    "static",
+    "analysis",
+    "typescript"
+  ],
+  "author": "Willard Rafnsson & Mark Kragerup & Mathias H. Nielsen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/willardthor/ifc-ts/issues"
+  },
+  "homepage": "https://github.com/willardthor/ifc-ts#readme",
   "dependencies": {
     "@types/node": "^20.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3"
   }
 }
+
