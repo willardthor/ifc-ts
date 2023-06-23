@@ -301,7 +301,7 @@ namespace example_subtyping {
     // Contravariance examples
     const con : Contravariant<never>  = (_ : never) => null
     const cos : Contravariant<string> = (_ : string) => null
-    // @ts-expect-error : string </: never. (cannot down-classify a never to a string)
+    // ts-expect-error : string </: never. (cannot down-classify a never to a string)
     const co0 : Contravariant<string> = con
     // never <: string, so we can assign a string to a never (can down-classify type).
     const co1 : Contravariant<never>  = cos
@@ -309,7 +309,7 @@ namespace example_subtyping {
     // Invariance examples
     const nvn : Invariant<never>  = (_ : never)  => { return _ }
     const nvs : Invariant<string> = (_ : string) => { return _ }
-    // @ts-expect-error : cannot covariably modify the type.
+    // ts-expect-error : cannot covariably modify the type.
     const nv0 : Invariant<string> = nvn
     // @ts-expect-error : cannot contravariably modify the type.
     const nv1 : Invariant<never>  = nvs
@@ -348,7 +348,7 @@ type LIO<Lpc extends Level, L extends Level, V> = [ Contravariant<Lpc>, L, V ]
 namespace example_contravariance_again {
     // shrinking the domain - that's OK
     const ssn : (x : string) => null = (x : string | number) => null
-    // @ts-expect-error : function not defined on full domain string | number
+    // ts-expect-error : function not defined on full domain string | number
     const sns : (x : string | number) => null = (x : string) => null
 
     const amy : "Amy" = "Amy"
@@ -363,7 +363,7 @@ namespace example_contravariance_again {
 
     // shrinking the domain - that's OK
     const a_s : (x : typeof amy) => null = (x : Top) => null
-    // @ts-expect-error : function not defined on full domain string
+    // ts-expect-error : function not defined on full domain string
     const s_a : (x : Top) => null = (x : typeof amy) => null
     // @ts-expect-error : function not defined on full domain typeof amy (domains disjoint) 
     const a_b : (x : typeof amy) => null = (x : typeof bob) => null

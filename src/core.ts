@@ -39,9 +39,7 @@ export type LUB<L extends Level, R extends Level> = true extends true ? L | R : 
 // to have type L|R, not LUB<L,R>. see e0 and b1 below)
 
 /** Value-level function for least upper bound. */
-export function lub<L extends Level, R extends Level>(l: L, r: R): LUB<L, R> {
-    return l;
-}
+export const lub = <L extends Level, R extends Level>(l: L, r: R): LUB<L, R> => l;
 
 // the return type is actually L ; making it
 // L | R is actually weakening the guarantee
@@ -183,7 +181,7 @@ export function label<L extends Level, V>(l: L, v: V): Labeled<L, V> {
     return [l, v];
 }
 
-/** Project labeled-value to the value. WARNING: this is UNSAFE. */
+/** Project labeled-value to the value. WARNING: this is UNSAFE because it circumvents information flow control. */
 export function unsafe_valueOf<L extends Level, V>(lv: Labeled<L, V>): V {
     const [l, v] = lv;
     return v;
