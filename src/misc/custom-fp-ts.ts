@@ -1,5 +1,5 @@
-import {bind, LIO, ret} from "./components/monad";
-import {GLB, Level, LUB} from "./components/lattice";
+import {bind, LIO, ret} from "../components/monad";
+import {GLB, Level, LUB} from "../components/lattice";
 
 // Implementing functions from fp-ts:
 
