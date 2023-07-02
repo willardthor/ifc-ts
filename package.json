@@ -1,7 +1,7 @@
 {
   "name": "ifc-ts",
   "description": "ifc-ts is a library that provides developers with an API\r for specifying information-flow security constraints in\r effectful code. These constraints are checked statically\r by TypeScript's type checker. Consequently, if an effectful\r computation, written using this API, is well-typed, then it\r is information-flow secure (aka. noninterfering).",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
