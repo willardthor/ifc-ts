@@ -1,7 +1,7 @@
 import {readFileSync, writeFileSync} from 'fs';
-import {input, output, snk, Snk, src, Src} from "../../components/monad-io";
-import {label} from "../../components/label";
-import {bind} from "../../components/monad";
+import {input, output, snk, Snk, src, Src} from "../../src/components/monad-io";
+import {label} from "../../src/components/label";
+import {bind} from "../../src/components/monad";
 
 // IO_EXAMPLES_____________________________________________
 

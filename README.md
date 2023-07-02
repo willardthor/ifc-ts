@@ -43,7 +43,7 @@ And that's it, you're ready to go!
 
 ## Examples
 
-We have various examples in the [src/examples/]() directory. Make sure to check them out to get the most out of this library.
+We have various examples in the [examples/]() directory. Make sure to check them out to get the most out of this library.
 
 
 ## Build

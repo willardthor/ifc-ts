@@ -1,4 +1,4 @@
-import {glb, LEQ, lub} from "../components/lattice";
+import {glb, LEQ, lub} from "../src/components/lattice";
 
 namespace example_lub_glb {
     const e0 = lub("Alice", "Bob") // "Alice" | "Bob"

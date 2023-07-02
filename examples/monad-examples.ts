@@ -1,8 +1,8 @@
-import {bind, LIO, ret, toLabeled, unLabel} from "../components/monad";
-import {Bot, botLevel, Level, LUB, lub, Top, topLevel} from "../components/lattice";
-import {toContravariant} from "../misc/subtyping";
-import {downPC, upData} from "../components/monad-utility";
-import {label, Labeled} from "../components/label";
+import {bind, LIO, ret, toLabeled, unLabel} from "../src/components/monad";
+import {Bot, botLevel, Level, LUB, lub, Top, topLevel} from "../src/components/lattice";
+import {toContravariant} from "../src/misc/subtyping";
+import {downPC, upData} from "../src/components/monad-utility";
+import {label, Labeled} from "../src/components/label";
 
 namespace example_reclassify {
     const c0: LIO<Top, Bot, number> = [toContravariant(topLevel), botLevel, 5]

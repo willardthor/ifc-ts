@@ -1,5 +1,5 @@
-import {botLevel, Top, topLevel} from "../components/lattice";
-import {Contravariant, Invariant} from "../misc/subtyping";
+import {botLevel, Top, topLevel} from "../src/components/lattice";
+import {Contravariant, Invariant} from "../src/misc/subtyping";
 
 namespace example_subtyping {
     // Covarance examples

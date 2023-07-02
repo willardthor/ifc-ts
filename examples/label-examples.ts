@@ -1,5 +1,5 @@
-import {label, Labeled, labelOf} from "../components/label";
-import {Bot, botLevel, GLB, Level, lub, LUB, Top} from "../components/lattice";
+import {label, Labeled, labelOf} from "../src/components/label";
+import {Bot, botLevel, GLB, Level, lub, LUB, Top} from "../src/components/lattice";
 
 namespace examples_labels_as_values {
     const amy = "Amy"
