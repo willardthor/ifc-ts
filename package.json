@@ -29,7 +29,7 @@
     "analysis",
     "typescript"
   ],
-  "author": "Willard Rafnsson & Mark Kragerup & Mathias H. Nielsen",
+  "author": "Willard Rafnsson & Mark Kragerup",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/willardthor/ifc-ts/issues"
